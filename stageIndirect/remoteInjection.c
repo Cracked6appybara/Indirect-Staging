@@ -1,8 +1,9 @@
 #include <Windows.h>
 #include <stdio.h>
 
+#include "Structs.h"
 #include "Common.h"
-
+#include "Debug.h"
 
 BOOL injectMyAss(IN HANDLE hProcess, IN DWORD PID, IN PBYTE pShellcode, IN SIZE_T sShellcodeSize) {
 

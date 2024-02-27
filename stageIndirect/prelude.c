@@ -1,8 +1,9 @@
 #include <Windows.h>
 #include <stdio.h>
 
-
+#include "Structs.h"
 #include "Common.h"
+#include "Debug.h"
 
 HMODULE GetMod(LPCWSTR modName) {
 
@@ -45,13 +46,13 @@ VOID indirectMyAss(IN LPCSTR funcName, IN HMODULE hNTDLL, OUT DWORD* SSN, OUT UI
     *Syscall = funcAddress + 0x12;
 
 
-    if (!memcmp(opcodes, (const void*)*Syscall, sizeof(opcodes)) == 0) {
+    if (!_memcpy(opcodes, (const void*)*Syscall, sizeof(opcodes)) == 0) {
         warn("[memcmp] function opcodes do not match the syscall opcodes, error: %d", GetLastError());
     }
     okay("syscall signature [0x0F, 0x05] matched, found a valid syscall signature");
 
 
     okay("got the SSN of %s (0x%lx)", funcName, *SSN);
-    printf("\n\t* %s", funcName);
-    printf("\n\t= Address\n\t-> [0x%p]\n\t= Syscall\n\t-> [0x%p]\n\t= SSN\n\t-> [0x%lx]\n\n", funcAddress, *Syscall, *SSN);
+    PRINTA("\n\t* %s", funcName);
+    PRINTA("\n\t= Address\n\t-> [0x%p]\n\t= Syscall\n\t-> [0x%p]\n\t= SSN\n\t-> [0x%lx]\n\n", funcAddress, *Syscall, *SSN);
 }

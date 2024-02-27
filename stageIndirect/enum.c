@@ -2,9 +2,10 @@
 #include <Psapi.h>
 #include <stdio.h>
 
+#include "Structs.h"
 #include "Common.h"
-
-
+#include "Debug.h"
+/*
 BOOL GetRemoteProcessHandle(IN LPCWSTR szProcName, OUT DWORD* pdwPid, OUT HANDLE* phProcess) {
 
 	DWORD		adwProcesses[1024 * 2],
@@ -17,16 +18,22 @@ BOOL GetRemoteProcessHandle(IN LPCWSTR szProcName, OUT DWORD* pdwPid, OUT HANDLE
 
 	WCHAR		szProc[MAX_PATH];
 
+	NTSTATUS STATUS = 0;
+
+	CLIENT_ID CID = { (HANDLE)pdwPid, 0 };
+	OBJECT_ATTRIBUTES OA = { sizeof(OA), 0 };
+
+
 	// Get the array of pid's in the system
 	if (!EnumProcesses(adwProcesses, sizeof(adwProcesses), &dwReturnLen1)) {
-		printf("[!] EnumProcesses Failed With Error : %d \n", GetLastError());
+		PRINTA("[!] EnumProcesses Failed With Error : %d \n", GetLastError());
 		return FALSE;
 	}
 
 	// Calculating the number of elements in the array returned 
 	dwNmbrOfPids = dwReturnLen1 / sizeof(DWORD);
 
-	printf("[i] Number Of Processes Detected : %d \n", dwNmbrOfPids);
+	PRINTA("[i] Number Of Processes Detected : %d \n", dwNmbrOfPids);
 
 	for (int i = 0; i < dwNmbrOfPids; i++) {
 
@@ -35,18 +42,18 @@ BOOL GetRemoteProcessHandle(IN LPCWSTR szProcName, OUT DWORD* pdwPid, OUT HANDLE
 
 			// Opening a process handle 
 			if ((hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, adwProcesses[i])) != NULL) {
-
+			
 				// If handle is valid
 				// Get a handle of a module in the process 'hProcess'.
 				// The module handle is needed for 'GetModuleBaseName'
 				if (!EnumProcessModules(hProcess, &hModule, sizeof(HMODULE), &dwReturnLen2)) {
-					printf("[!] EnumProcessModules Failed [ At Pid: %d ] With Error : %d \n", adwProcesses[i], GetLastError());
+					PRINTA("[!] EnumProcessModules Failed [ At Pid: %d ] With Error : %d \n", adwProcesses[i], GetLastError());
 				}
 				else {
 					// if EnumProcessModules succeeded
 					// get the name of 'hProcess', and saving it in the 'szProc' variable 
 					if (!GetModuleBaseName(hProcess, hModule, szProc, sizeof(szProc) / sizeof(WCHAR))) {
-						printf("[!] GetModuleBaseName Failed [ At Pid: %d ] With Error : %d \n", adwProcesses[i], GetLastError());
+						PRINTA("[!] GetModuleBaseName Failed [ At Pid: %d ] With Error : %d \n", adwProcesses[i], GetLastError());
 					}
 					else {
 						// Perform the comparison logic
@@ -60,7 +67,13 @@ BOOL GetRemoteProcessHandle(IN LPCWSTR szProcName, OUT DWORD* pdwPid, OUT HANDLE
 					}
 				}
 
-				CloseHandle(hProcess);
+				//CloseHandle(hProcess);
+
+				STATUS = NtClose(hProcess);
+				if (!STATUS == STATUS_SUCCESS) {
+					warn("[NtClose] failed, error: 0x%x", STATUS);
+					return NULL;
+				}
 			}
 		}
 	}
@@ -71,65 +84,72 @@ BOOL GetRemoteProcessHandle(IN LPCWSTR szProcName, OUT DWORD* pdwPid, OUT HANDLE
 	else
 		return TRUE;
 }
+*/
 
 
+BOOL GetRemoteProcessHandle(IN LPCWSTR szProcName, IN DWORD* pdwPid, IN HANDLE* phProcess) {
 
-BOOL PrintProcesses() {
+	ULONG							uReturnLen1 = NULL,
+		uReturnLen2 = NULL;
+	PSYSTEM_PROCESS_INFORMATION		SystemProcInfo = NULL;
+	PVOID							pValueToFree = NULL;
+	NTSTATUS						STATUS = NULL;
 
-	DWORD		adwProcesses[1024 * 2],
-		dwReturnLen1 = NULL,
-		dwReturnLen2 = NULL,
-		dwNmbrOfPids = NULL;
+	// this will fail (with status = STATUS_INFO_LENGTH_MISMATCH), but that's ok, because we need to know how much to allocate (uReturnLen1)
+	STATUS = NtQuerySystemInformation(SystemProcessInformation, NULL, NULL, &uReturnLen1);
+	if (!STATUS == STATUS_SUCCESS) {
+		warn("[NtQuerySystemInformation] failed, error: 0x%x", STATUS);
+		return NULL;
+	}
 
-	HANDLE		hProcess = NULL;
-	HMODULE		hModule = NULL;
-
-	WCHAR		szProc[MAX_PATH];
-
-	// get the array of pid's in the system
-	if (!EnumProcesses(adwProcesses, sizeof(adwProcesses), &dwReturnLen1)) {
-		printf("[!] EnumProcesses Failed With Error : %d \n", GetLastError());
+	// allocating enough buffer for the returned array of `SYSTEM_PROCESS_INFORMATION` struct
+	SystemProcInfo = (PSYSTEM_PROCESS_INFORMATION)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (SIZE_T)uReturnLen1);
+	if (SystemProcInfo == NULL) {
 		return FALSE;
 	}
 
-	// calculating the number of elements in the array returned 
-	dwNmbrOfPids = dwReturnLen1 / sizeof(DWORD);
+	// since we will modify 'SystemProcInfo', we will save its intial value before the while loop to free it later
+	pValueToFree = SystemProcInfo;
 
-	printf("[i] Number Of Processes Detected : %d \n", dwNmbrOfPids);
+	// calling NtQuerySystemInformation with the right arguments, the output will be saved to 'SystemProcInfo'
+	STATUS = NtQuerySystemInformation(SystemProcessInformation, SystemProcInfo, uReturnLen1, &uReturnLen2);
+	if (STATUS != 0x0) {
+#ifdef DEBUG
+		PRINTA("[!] NtQuerySystemInformation Failed With Error : 0x%0.8X \n", STATUS);
+#endif // DEBUG
 
-	for (int i = 0; i < dwNmbrOfPids; i++) {
-
-		// a small check
-		if (adwProcesses[i] != NULL) {
-
-			// opening a process handle 
-			if ((hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, adwProcesses[i])) != NULL) {
-
-				// If handle is valid
-				// Get a handle of a module in the process 'hProcess'.
-				// The module handle is needed for 'GetModuleBaseName'
-				if (!EnumProcessModules(hProcess, &hModule, sizeof(HMODULE), &dwReturnLen2)) {
-					printf("[!] EnumProcessModules Failed [ At Pid: %d ] With Error : %d \n", adwProcesses[i], GetLastError());
-				}
-				else {
-					// if EnumProcessModules succeeded
-					// get the name of 'hProcess', and saving it in the 'szProc' variable 
-					if (!GetModuleBaseName(hProcess, hModule, szProc, sizeof(szProc) / sizeof(WCHAR))) {
-						printf("[!] GetModuleBaseName Failed [ At Pid: %d ] With Error : %d \n", adwProcesses[i], GetLastError());
-					}
-					else {
-						// printing the process name & its pid
-						wprintf(L"[%0.3d] Process \"%s\" - Of Pid : %d \n", i, szProc, adwProcesses[i]);
-					}
-				}
-
-				// close process handle 
-				CloseHandle(hProcess);
-			}
-		}
-
-		// Iterate through the PIDs array  
+		return FALSE;
 	}
 
-	return TRUE;
+	while (TRUE) {
+
+		// small check for the process's name size
+		// comparing the enumerated process name to what we want to target
+		if (SystemProcInfo->ImageName.Length && HASHW(SystemProcInfo->ImageName.Buffer) == HASHW(szProcName)) {
+			// openning a handle to the target process and saving it, then breaking 
+			*pdwPid = (DWORD)SystemProcInfo->UniqueProcessId;
+			STATUS = NtOpenProcess(*phProcess, PROCESS_ALL_ACCESS, FALSE, (DWORD)SystemProcInfo->UniqueProcessId);
+			if (!STATUS == STATUS_SUCCESS) {
+				warn("[NtOpenProcess] failed, error: 0x%x", STATUS);
+				return NULL;
+			}
+			break;
+		}
+
+		// if NextEntryOffset is 0, we reached the end of the array
+		if (!SystemProcInfo->NextEntryOffset)
+			break;
+
+		// moving to the next element in the array
+		SystemProcInfo = (PSYSTEM_PROCESS_INFORMATION)((ULONG_PTR)SystemProcInfo + SystemProcInfo->NextEntryOffset);
+	}
+
+	// freeing using the initial address
+	HeapFree(GetProcessHeap(), 0, pValueToFree);
+
+	// checking if we got the target's process handle
+	if (*pdwPid == NULL || *phProcess == NULL)
+		return FALSE;
+	else
+		return TRUE;
 }

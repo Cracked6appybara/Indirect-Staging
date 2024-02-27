@@ -4,7 +4,8 @@
 #include <windows.h>
 #include <stdio.h>
 
-
+#include "Structs.h"
+#include "Debug.h"
 
 
 
@@ -12,9 +13,9 @@
 /*-------------[MACROS]-------------*/
 
 #define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
-#define okay(msg, ...) printf("[+] " msg "\n", ##__VA_ARGS__);
-#define info(msg, ...) printf("[*] " msg "\n", ##__VA_ARGS__);
-#define warn(msg, ...) printf("[!] " msg "\n", ##__VA_ARGS__);
+#define okay(msg, ...) PRINTA("[+] " msg "\n", ##__VA_ARGS__);
+#define info(msg, ...) PRINTA("[*] " msg "\n", ##__VA_ARGS__);
+#define warn(msg, ...) PRINTA("[!] " msg "\n", ##__VA_ARGS__);
 
 /*-------------[STRUCTURES]-------------*/
 typedef struct _PS_ATTRIBUTE
@@ -302,6 +303,58 @@ typedef struct _PEB
 } PEB, * PPEB;
 
 
+// https://processhacker.sourceforge.io/doc/ntbasic_8h.html
+typedef LONG KPRIORITY;
+
+
+// https://doxygen.reactos.org/da/df4/struct__SYSTEM__PROCESS__INFORMATION.html
+typedef struct _SYSTEM_PROCESS_INFORMATION
+{
+    ULONG NextEntryOffset;
+    ULONG NumberOfThreads;
+    LARGE_INTEGER WorkingSetPrivateSize; //VISTA
+    ULONG HardFaultCount; //WIN7
+    ULONG NumberOfThreadsHighWatermark; //WIN7
+    ULONGLONG CycleTime; //WIN7
+    LARGE_INTEGER CreateTime;
+    LARGE_INTEGER UserTime;
+    LARGE_INTEGER KernelTime;
+    UNICODE_STRING ImageName;
+    KPRIORITY BasePriority;
+    HANDLE UniqueProcessId;
+    HANDLE InheritedFromUniqueProcessId;
+    ULONG HandleCount;
+    ULONG SessionId;
+    ULONG_PTR PageDirectoryBase;
+
+    //
+    // This part corresponds to VM_COUNTERS_EX.
+    // NOTE: *NOT* THE SAME AS VM_COUNTERS!
+    //
+    SIZE_T PeakVirtualSize;
+    SIZE_T VirtualSize;
+    ULONG PageFaultCount;
+    SIZE_T PeakWorkingSetSize;
+    SIZE_T WorkingSetSize;
+    SIZE_T QuotaPeakPagedPoolUsage;
+    SIZE_T QuotaPagedPoolUsage;
+    SIZE_T QuotaPeakNonPagedPoolUsage;
+    SIZE_T QuotaNonPagedPoolUsage;
+    SIZE_T PagefileUsage;
+    SIZE_T PeakPagefileUsage;
+    SIZE_T PrivatePageCount;
+
+    //
+    // This part corresponds to IO_COUNTERS
+    //
+    LARGE_INTEGER ReadOperationCount;
+    LARGE_INTEGER WriteOperationCount;
+    LARGE_INTEGER OtherOperationCount;
+    LARGE_INTEGER ReadTransferCount;
+    LARGE_INTEGER WriteTransferCount;
+    LARGE_INTEGER OtherTransferCount;
+    //    SYSTEM_THREAD_INFORMATION TH[1];
+} SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
 
 /*-------------[SSN/Syscall]-------------*/
 
@@ -310,12 +363,16 @@ DWORD NtCreateThreadSSN;
 DWORD NtWriteVirtualMemorySSN;
 DWORD NtWaitForSingleObjectSSN;
 DWORD NtCloseSSN;
+DWORD NtOpenProcessSSN;
+DWORD NtQuerySystemInformationSSN;
 
 UINT_PTR NtAllocateVirtualMemorySyscall;
 UINT_PTR NtCreateThreadSyscall;
 UINT_PTR NtWriteVirtualMemorySyscall;
 UINT_PTR NtWaitForSingleObjectSyscall;
 UINT_PTR NtCloseSyscall;
+UINT_PTR NtOpenProcessSyscall;
+UINT_PTR NtQuerySystemInformationSyscall;
 
 /*-------------[FUNCTIONS]-------------*/
 extern NTSTATUS NtAllocateVirtualMemory(
@@ -361,7 +418,12 @@ extern NTSTATUS NtClose(
     IN HANDLE Handle);
 
 
-
+typedef NTSTATUS(NTAPI* NtQuerySystemInformation)(
+    SYSTEM_INFORMATION_CLASS SystemInformationClass,
+    PVOID                    SystemInformation,
+    ULONG                    SystemInformationLength,
+    PULONG                   ReturnLength
+    );
 
 
 /*-------------[Prototypes]-------------*/
