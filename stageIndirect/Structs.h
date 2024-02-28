@@ -1,6 +1,14 @@
+/*
+    contains windows structures and enumerations needed.
+    e.g.: PEB + TEB structures
+    e.g.: SYSTEM_INFORMATION_CLASS enum
+*/
+
 #pragma once
-#include <windows.h>
+
+#include <Windows.h>
 #include "Common.h"
+
 
 
 // https://github.com/winsiderss/systeminformer/blob/master/phnt/include/ntexapi.h#L1324
@@ -247,3 +255,6 @@ typedef enum _SYSTEM_INFORMATION_CLASS
     SystemOriginalImageFeatureInformation,
     MaxSystemInfoClass
 } SYSTEM_INFORMATION_CLASS;
+
+
+

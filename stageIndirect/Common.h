@@ -418,12 +418,12 @@ extern NTSTATUS NtClose(
     IN HANDLE Handle);
 
 
-typedef NTSTATUS(NTAPI* NtQuerySystemInformation)(
+extern NTSTATUS NtQuerySystemInformation(
     SYSTEM_INFORMATION_CLASS SystemInformationClass,
     PVOID                    SystemInformation,
     ULONG                    SystemInformationLength,
     PULONG                   ReturnLength
-    );
+);
 
 
 /*-------------[Prototypes]-------------*/
