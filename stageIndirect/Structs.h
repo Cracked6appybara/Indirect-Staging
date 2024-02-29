@@ -7,7 +7,464 @@
 #pragma once
 
 #include <Windows.h>
-#include "Common.h"
+
+#ifndef STRUCTS_H
+#define STRUCTS_H
+
+
+// this is what SystemFunction032 function take as a parameter
+typedef struct
+{
+    DWORD   Length;
+    DWORD   MaximumLength;
+    PVOID   Buffer;
+
+} USTRING;
+
+
+typedef enum _SECTION_INHERIT {
+    ViewShare = 1,
+    ViewUnmap = 2
+} SECTION_INHERIT, * PSECTION_INHERIT;
+
+
+typedef struct _UNICODE_STRING {
+    USHORT Length;
+    USHORT MaximumLength;
+    PWSTR  Buffer;
+} UNICODE_STRING, * PUNICODE_STRING;
+
+
+typedef PVOID PACTIVATION_CONTEXT;
+typedef PVOID PRTL_USER_PROCESS_PARAMETERS;
+typedef PVOID PAPI_SET_NAMESPACE;
+
+
+
+// https://www.nirsoft.net/kernel_struct/vista/PEB_LDR_DATA.html
+
+typedef struct _PEB_LDR_DATA {
+    ULONG                   Length;
+    ULONG                   Initialized;
+    PVOID                   SsHandle;
+    LIST_ENTRY              InLoadOrderModuleList;
+    LIST_ENTRY              InMemoryOrderModuleList;
+    LIST_ENTRY              InInitializationOrderModuleList;
+} PEB_LDR_DATA, * PPEB_LDR_DATA;
+
+
+
+// https://www.nirsoft.net/kernel_struct/vista/LDR_DATA_TABLE_ENTRY.html
+
+typedef struct _LDR_DATA_TABLE_ENTRY {
+    LIST_ENTRY InLoadOrderLinks;
+    LIST_ENTRY InMemoryOrderLinks;
+    LIST_ENTRY InInitializationOrderLinks;
+    PVOID DllBase;
+    PVOID EntryPoint;
+    ULONG SizeOfImage;
+    UNICODE_STRING FullDllName;
+    UNICODE_STRING BaseDllName;
+    ULONG Flags;
+    WORD LoadCount;
+    WORD TlsIndex;
+    union {
+        LIST_ENTRY HashLinks;
+        struct {
+            PVOID SectionPointer;
+            ULONG CheckSum;
+        };
+    };
+    union {
+        ULONG TimeDateStamp;
+        PVOID LoadedImports;
+    };
+    PACTIVATION_CONTEXT EntryPointActivationContext;
+    PVOID PatchInformation;
+    LIST_ENTRY ForwarderLinks;
+    LIST_ENTRY ServiceTagLinks;
+    LIST_ENTRY StaticLinks;
+} LDR_DATA_TABLE_ENTRY, * PLDR_DATA_TABLE_ENTRY;
+
+
+
+// https://github.com/processhacker/phnt/blob/master/ntpebteb.h#L69
+
+typedef struct _PEB
+{
+    BOOLEAN InheritedAddressSpace;
+    BOOLEAN ReadImageFileExecOptions;
+    BOOLEAN BeingDebugged;
+    union
+    {
+        BOOLEAN BitField;
+        struct
+        {
+            BOOLEAN ImageUsesLargePages : 1;
+            BOOLEAN IsProtectedProcess : 1;
+            BOOLEAN IsImageDynamicallyRelocated : 1;
+            BOOLEAN SkipPatchingUser32Forwarders : 1;
+            BOOLEAN IsPackagedProcess : 1;
+            BOOLEAN IsAppContainer : 1;
+            BOOLEAN IsProtectedProcessLight : 1;
+            BOOLEAN IsLongPathAwareProcess : 1;
+        };
+    };
+
+    HANDLE Mutant;
+
+    PVOID ImageBaseAddress;
+    PPEB_LDR_DATA Ldr;
+    PRTL_USER_PROCESS_PARAMETERS ProcessParameters;
+    PVOID SubSystemData;
+    PVOID ProcessHeap;
+    PRTL_CRITICAL_SECTION FastPebLock;
+    PSLIST_HEADER AtlThunkSListPtr;
+    PVOID IFEOKey;
+
+    union
+    {
+        ULONG CrossProcessFlags;
+        struct
+        {
+            ULONG ProcessInJob : 1;
+            ULONG ProcessInitializing : 1;
+            ULONG ProcessUsingVEH : 1;
+            ULONG ProcessUsingVCH : 1;
+            ULONG ProcessUsingFTH : 1;
+            ULONG ProcessPreviouslyThrottled : 1;
+            ULONG ProcessCurrentlyThrottled : 1;
+            ULONG ProcessImagesHotPatched : 1; // REDSTONE5
+            ULONG ReservedBits0 : 24;
+        };
+    };
+    union
+    {
+        PVOID KernelCallbackTable;
+        PVOID UserSharedInfoPtr;
+    };
+    ULONG SystemReserved;
+    ULONG AtlThunkSListPtr32;
+    PAPI_SET_NAMESPACE ApiSetMap;
+    ULONG TlsExpansionCounter;
+    PVOID TlsBitmap;
+    ULONG TlsBitmapBits[2];
+
+    PVOID ReadOnlySharedMemoryBase;
+    PVOID SharedData; // HotpatchInformation
+    PVOID* ReadOnlyStaticServerData;
+
+    PVOID AnsiCodePageData; // PCPTABLEINFO
+    PVOID OemCodePageData; // PCPTABLEINFO
+    PVOID UnicodeCaseTableData; // PNLSTABLEINFO
+
+    ULONG NumberOfProcessors;
+    ULONG NtGlobalFlag;
+
+    ULARGE_INTEGER CriticalSectionTimeout;
+    SIZE_T HeapSegmentReserve;
+    SIZE_T HeapSegmentCommit;
+    SIZE_T HeapDeCommitTotalFreeThreshold;
+    SIZE_T HeapDeCommitFreeBlockThreshold;
+
+    ULONG NumberOfHeaps;
+    ULONG MaximumNumberOfHeaps;
+    PVOID* ProcessHeaps; // PHEAP
+
+    PVOID GdiSharedHandleTable;
+    PVOID ProcessStarterHelper;
+    ULONG GdiDCAttributeList;
+
+    PRTL_CRITICAL_SECTION LoaderLock;
+
+    ULONG OSMajorVersion;
+    ULONG OSMinorVersion;
+    USHORT OSBuildNumber;
+    USHORT OSCSDVersion;
+    ULONG OSPlatformId;
+    ULONG ImageSubsystem;
+    ULONG ImageSubsystemMajorVersion;
+    ULONG ImageSubsystemMinorVersion;
+    KAFFINITY ActiveProcessAffinityMask;
+    ULONG GdiHandleBuffer[60];
+    PVOID PostProcessInitRoutine;
+
+    PVOID TlsExpansionBitmap;
+    ULONG TlsExpansionBitmapBits[32];
+
+    ULONG SessionId;
+
+    ULARGE_INTEGER AppCompatFlags;
+    ULARGE_INTEGER AppCompatFlagsUser;
+    PVOID pShimData;
+    PVOID AppCompatInfo; // APPCOMPAT_EXE_DATA
+
+    UNICODE_STRING CSDVersion;
+
+    PVOID ActivationContextData; // ACTIVATION_CONTEXT_DATA
+    PVOID ProcessAssemblyStorageMap; // ASSEMBLY_STORAGE_MAP
+    PVOID SystemDefaultActivationContextData; // ACTIVATION_CONTEXT_DATA
+    PVOID SystemAssemblyStorageMap; // ASSEMBLY_STORAGE_MAP
+
+    SIZE_T MinimumStackCommit;
+
+    PVOID SparePointers[2]; // 19H1 (previously FlsCallback to FlsHighIndex)
+    PVOID PatchLoaderData;
+    PVOID ChpeV2ProcessInfo; // _CHPEV2_PROCESS_INFO
+
+    ULONG AppModelFeatureState;
+    ULONG SpareUlongs[2];
+
+    USHORT ActiveCodePage;
+    USHORT OemCodePage;
+    USHORT UseCaseMapping;
+    USHORT UnusedNlsField;
+
+    PVOID WerRegistrationData;
+    PVOID WerShipAssertPtr;
+
+    union
+    {
+        PVOID pContextData; // WIN7
+        PVOID pUnused; // WIN10
+        PVOID EcCodeBitMap; // WIN11
+    };
+
+    PVOID pImageHeaderHash;
+    union
+    {
+        ULONG TracingFlags;
+        struct
+        {
+            ULONG HeapTracingEnabled : 1;
+            ULONG CritSecTracingEnabled : 1;
+            ULONG LibLoaderTracingEnabled : 1;
+            ULONG SpareTracingBits : 29;
+        };
+    };
+    ULONGLONG CsrServerReadOnlySharedMemoryBase;
+    PRTL_CRITICAL_SECTION TppWorkerpListLock;
+    LIST_ENTRY TppWorkerpList;
+    PVOID WaitOnAddressHashTable[128];
+    PVOID TelemetryCoverageHeader; // REDSTONE3
+    ULONG CloudFileFlags;
+    ULONG CloudFileDiagFlags; // REDSTONE4
+    CHAR PlaceholderCompatibilityMode;
+    CHAR PlaceholderCompatibilityModeReserved[7];
+    struct _LEAP_SECOND_DATA* LeapSecondData; // REDSTONE5
+    union
+    {
+        ULONG LeapSecondFlags;
+        struct
+        {
+            ULONG SixtySecondEnabled : 1;
+            ULONG Reserved : 31;
+        };
+    };
+    ULONG NtGlobalFlag2;
+    ULONGLONG ExtendedFeatureDisableMask; // since WIN11
+} PEB, * PPEB;
+
+
+// the following is from structs.h in the hellsgate repo
+// https://github.com/am0nsec/HellsGate/blob/master/HellsGate/structs.h#L95
+
+typedef struct __CLIENT_ID {
+    HANDLE UniqueProcess;
+    HANDLE UniqueThread;
+} CLIENT_ID, * PCLIENT_ID;
+
+typedef struct _TEB_ACTIVE_FRAME_CONTEXT {
+    ULONG Flags;
+    PCHAR FrameName;
+} TEB_ACTIVE_FRAME_CONTEXT, * PTEB_ACTIVE_FRAME_CONTEXT;
+
+typedef struct _TEB_ACTIVE_FRAME {
+    ULONG Flags;
+    struct _TEB_ACTIVE_FRAME* Previous;
+    PTEB_ACTIVE_FRAME_CONTEXT Context;
+} TEB_ACTIVE_FRAME, * PTEB_ACTIVE_FRAME;
+
+typedef struct _GDI_TEB_BATCH {
+    ULONG Offset;
+    ULONG HDC;
+    ULONG Buffer[310];
+} GDI_TEB_BATCH, * PGDI_TEB_BATCH;
+
+typedef PVOID PACTIVATION_CONTEXT;
+
+typedef struct _RTL_ACTIVATION_CONTEXT_STACK_FRAME {
+    struct __RTL_ACTIVATION_CONTEXT_STACK_FRAME* Previous;
+    PACTIVATION_CONTEXT ActivationContext;
+    ULONG Flags;
+} RTL_ACTIVATION_CONTEXT_STACK_FRAME, * PRTL_ACTIVATION_CONTEXT_STACK_FRAME;
+
+typedef struct _ACTIVATION_CONTEXT_STACK {
+    PRTL_ACTIVATION_CONTEXT_STACK_FRAME ActiveFrame;
+    LIST_ENTRY FrameListCache;
+    ULONG Flags;
+    ULONG NextCookieSequenceNumber;
+    ULONG StackId;
+} ACTIVATION_CONTEXT_STACK, * PACTIVATION_CONTEXT_STACK;
+
+typedef struct _TEB {
+    NT_TIB				NtTib;
+    PVOID				EnvironmentPointer;
+    CLIENT_ID			ClientId;
+    PVOID				ActiveRpcHandle;
+    PVOID				ThreadLocalStoragePointer;
+    PPEB				ProcessEnvironmentBlock;
+    ULONG               LastErrorValue;
+    ULONG               CountOfOwnedCriticalSections;
+    PVOID				CsrClientThread;
+    PVOID				Win32ThreadInfo;
+    ULONG               User32Reserved[26];
+    ULONG               UserReserved[5];
+    PVOID				WOW32Reserved;
+    LCID                CurrentLocale;
+    ULONG               FpSoftwareStatusRegister;
+    PVOID				SystemReserved1[54];
+    LONG                ExceptionCode;
+#if (NTDDI_VERSION >= NTDDI_LONGHORN)
+    PACTIVATION_CONTEXT_STACK* ActivationContextStackPointer;
+    UCHAR                  SpareBytes1[0x30 - 3 * sizeof(PVOID)];
+    ULONG                  TxFsContext;
+#elif (NTDDI_VERSION >= NTDDI_WS03)
+    PACTIVATION_CONTEXT_STACK ActivationContextStackPointer;
+    UCHAR                  SpareBytes1[0x34 - 3 * sizeof(PVOID)];
+#else
+    ACTIVATION_CONTEXT_STACK ActivationContextStack;
+    UCHAR                  SpareBytes1[24];
+#endif
+    GDI_TEB_BATCH			GdiTebBatch;
+    CLIENT_ID				RealClientId;
+    PVOID					GdiCachedProcessHandle;
+    ULONG                   GdiClientPID;
+    ULONG                   GdiClientTID;
+    PVOID					GdiThreadLocalInfo;
+    PSIZE_T					Win32ClientInfo[62];
+    PVOID					glDispatchTable[233];
+    PSIZE_T					glReserved1[29];
+    PVOID					glReserved2;
+    PVOID					glSectionInfo;
+    PVOID					glSection;
+    PVOID					glTable;
+    PVOID					glCurrentRC;
+    PVOID					glContext;
+    NTSTATUS                LastStatusValue;
+    UNICODE_STRING			StaticUnicodeString;
+    WCHAR                   StaticUnicodeBuffer[261];
+    PVOID					DeallocationStack;
+    PVOID					TlsSlots[64];
+    LIST_ENTRY				TlsLinks;
+    PVOID					Vdm;
+    PVOID					ReservedForNtRpc;
+    PVOID					DbgSsReserved[2];
+#if (NTDDI_VERSION >= NTDDI_WS03)
+    ULONG                   HardErrorMode;
+#else
+    ULONG                  HardErrorsAreDisabled;
+#endif
+#if (NTDDI_VERSION >= NTDDI_LONGHORN)
+    PVOID					Instrumentation[13 - sizeof(GUID) / sizeof(PVOID)];
+    GUID                    ActivityId;
+    PVOID					SubProcessTag;
+    PVOID					EtwLocalData;
+    PVOID					EtwTraceData;
+#elif (NTDDI_VERSION >= NTDDI_WS03)
+    PVOID					Instrumentation[14];
+    PVOID					SubProcessTag;
+    PVOID					EtwLocalData;
+#else
+    PVOID					Instrumentation[16];
+#endif
+    PVOID					WinSockData;
+    ULONG					GdiBatchCount;
+#if (NTDDI_VERSION >= NTDDI_LONGHORN)
+    BOOLEAN                SpareBool0;
+    BOOLEAN                SpareBool1;
+    BOOLEAN                SpareBool2;
+#else
+    BOOLEAN                InDbgPrint;
+    BOOLEAN                FreeStackOnTermination;
+    BOOLEAN                HasFiberData;
+#endif
+    UCHAR                  IdealProcessor;
+#if (NTDDI_VERSION >= NTDDI_WS03)
+    ULONG                  GuaranteedStackBytes;
+#else
+    ULONG                  Spare3;
+#endif
+    PVOID				   ReservedForPerf;
+    PVOID				   ReservedForOle;
+    ULONG                  WaitingOnLoaderLock;
+#if (NTDDI_VERSION >= NTDDI_LONGHORN)
+    PVOID				   SavedPriorityState;
+    ULONG_PTR			   SoftPatchPtr1;
+    ULONG_PTR			   ThreadPoolData;
+#elif (NTDDI_VERSION >= NTDDI_WS03)
+    ULONG_PTR			   SparePointer1;
+    ULONG_PTR              SoftPatchPtr1;
+    ULONG_PTR              SoftPatchPtr2;
+#else
+    Wx86ThreadState        Wx86Thread;
+#endif
+    PVOID* TlsExpansionSlots;
+#if defined(_WIN64) && !defined(EXPLICIT_32BIT)
+    PVOID                  DeallocationBStore;
+    PVOID                  BStoreLimit;
+#endif
+    ULONG                  ImpersonationLocale;
+    ULONG                  IsImpersonating;
+    PVOID                  NlsCache;
+    PVOID                  pShimData;
+    ULONG                  HeapVirtualAffinity;
+    HANDLE                 CurrentTransactionHandle;
+    PTEB_ACTIVE_FRAME      ActiveFrame;
+#if (NTDDI_VERSION >= NTDDI_WS03)
+    PVOID FlsData;
+#endif
+#if (NTDDI_VERSION >= NTDDI_LONGHORN)
+    PVOID PreferredLangauges;
+    PVOID UserPrefLanguages;
+    PVOID MergedPrefLanguages;
+    ULONG MuiImpersonation;
+    union
+    {
+        struct
+        {
+            USHORT SpareCrossTebFlags : 16;
+        };
+        USHORT CrossTebFlags;
+    };
+    union
+    {
+        struct
+        {
+            USHORT DbgSafeThunkCall : 1;
+            USHORT DbgInDebugPrint : 1;
+            USHORT DbgHasFiberData : 1;
+            USHORT DbgSkipThreadAttach : 1;
+            USHORT DbgWerInShipAssertCode : 1;
+            USHORT DbgIssuedInitialBp : 1;
+            USHORT DbgClonedThread : 1;
+            USHORT SpareSameTebBits : 9;
+        };
+        USHORT SameTebFlags;
+    };
+    PVOID TxnScopeEntercallback;
+    PVOID TxnScopeExitCAllback;
+    PVOID TxnScopeContext;
+    ULONG LockCount;
+    ULONG ProcessRundown;
+    ULONG64 LastSwitchTime;
+    ULONG64 TotalSwitchOutTime;
+    LARGE_INTEGER WaitReasonBitMap;
+#else
+    BOOLEAN SafeThunkCall;
+    BOOLEAN BooleanSpare[3];
+#endif
+} TEB, * PTEB;
 
 
 
@@ -258,3 +715,109 @@ typedef enum _SYSTEM_INFORMATION_CLASS
 
 
 
+// https://processhacker.sourceforge.io/doc/ntbasic_8h.html
+typedef LONG KPRIORITY;
+
+
+
+// https://doxygen.reactos.org/da/df4/struct__SYSTEM__PROCESS__INFORMATION.html
+typedef struct _SYSTEM_PROCESS_INFORMATION
+{
+    ULONG NextEntryOffset;
+    ULONG NumberOfThreads;
+    LARGE_INTEGER WorkingSetPrivateSize; //VISTA
+    ULONG HardFaultCount; //WIN7
+    ULONG NumberOfThreadsHighWatermark; //WIN7
+    ULONGLONG CycleTime; //WIN7
+    LARGE_INTEGER CreateTime;
+    LARGE_INTEGER UserTime;
+    LARGE_INTEGER KernelTime;
+    UNICODE_STRING ImageName;
+    KPRIORITY BasePriority;
+    HANDLE UniqueProcessId;
+    HANDLE InheritedFromUniqueProcessId;
+    ULONG HandleCount;
+    ULONG SessionId;
+    ULONG_PTR PageDirectoryBase;
+
+    //
+    // This part corresponds to VM_COUNTERS_EX.
+    // NOTE: *NOT* THE SAME AS VM_COUNTERS!
+    //
+    SIZE_T PeakVirtualSize;
+    SIZE_T VirtualSize;
+    ULONG PageFaultCount;
+    SIZE_T PeakWorkingSetSize;
+    SIZE_T WorkingSetSize;
+    SIZE_T QuotaPeakPagedPoolUsage;
+    SIZE_T QuotaPagedPoolUsage;
+    SIZE_T QuotaPeakNonPagedPoolUsage;
+    SIZE_T QuotaNonPagedPoolUsage;
+    SIZE_T PagefileUsage;
+    SIZE_T PeakPagefileUsage;
+    SIZE_T PrivatePageCount;
+
+    //
+    // This part corresponds to IO_COUNTERS
+    //
+    LARGE_INTEGER ReadOperationCount;
+    LARGE_INTEGER WriteOperationCount;
+    LARGE_INTEGER OtherOperationCount;
+    LARGE_INTEGER ReadTransferCount;
+    LARGE_INTEGER WriteTransferCount;
+    LARGE_INTEGER OtherTransferCount;
+    //    SYSTEM_THREAD_INFORMATION TH[1];
+} SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
+
+
+
+/*-------------[STRUCTURES]-------------*/
+typedef struct _PS_ATTRIBUTE
+{
+    ULONG  Attribute;
+    SIZE_T Size;
+    union
+    {
+        ULONG Value;
+        PVOID ValuePtr;
+    } u1;
+    PSIZE_T ReturnLength;
+} PS_ATTRIBUTE, * PPS_ATTRIBUTE;
+
+
+typedef struct _OBJECT_ATTRIBUTES
+{
+    ULONG           Length;
+    HANDLE          RootDirectory;
+    PUNICODE_STRING ObjectName;
+    ULONG           Attributes;
+    PVOID           SecurityDescriptor;
+    PVOID           SecurityQualityOfService;
+} OBJECT_ATTRIBUTES, * POBJECT_ATTRIBUTES;
+
+#ifndef InitializeObjectAttributes
+#define InitializeObjectAttributes( p, n, a, r, s ) { \
+	(p)->Length = sizeof( OBJECT_ATTRIBUTES );        \
+	(p)->RootDirectory = r;                           \
+	(p)->Attributes = a;                              \
+	(p)->ObjectName = n;                              \
+	(p)->SecurityDescriptor = s;                      \
+	(p)->SecurityQualityOfService = NULL;             \
+}
+#endif
+
+
+typedef struct _PS_ATTRIBUTE_LIST
+{
+    SIZE_T       TotalLength;
+    PS_ATTRIBUTE Attributes[1];
+} PS_ATTRIBUTE_LIST, * PPS_ATTRIBUTE_LIST;
+
+
+
+// https://processhacker.sourceforge.io/doc/ntbasic_8h.html
+typedef LONG KPRIORITY;
+
+
+
+#endif // !STRUCTS_H

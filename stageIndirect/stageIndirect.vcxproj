@@ -128,7 +128,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -143,11 +143,14 @@
     <ClCompile Include="prelude.c" />
     <ClCompile Include="remoteInjection.c" />
     <ClCompile Include="staging.c" />
+    <ClCompile Include="StringHash.c" />
+    <ClCompile Include="WinApi.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Structs.h" />
+    <ClInclude Include="typedef.h" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="syscalls.asm">

