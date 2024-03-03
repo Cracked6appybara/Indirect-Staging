@@ -7,10 +7,11 @@
 - RC4 payload encryption
 - Brute forcing the decryption key
 - No CRT library imports
-
+---
 ### Description
 
 This project was made by me from the help of the MalDev malware development online course. I have learnt a lot from this course and this was a final project from the course. In this project I combined some of the things that I have learnt from the course to be able to create a feature full payload that bypasses AV solutions.
+
 ---
 
 ### INFO
