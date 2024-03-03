@@ -1,16 +1,17 @@
 ### Payload Loader Features
 
 - Remote code injection support
-- Mapping injection using direct syscalls via Hell's Gate
+- Classic remote process injection via indirect syscalls
 - API Hashing
-- Anti-Analysis functionality
-- RC4 payload encryption
-- Brute forcing the decryption key
+- String Hashing
 - No CRT library imports
+- ~~Self Deletion~~
+- ~~Anti-Analysis features~~
+  
 ---
 ### Description
 
-This project was made by me from the help of the MalDev malware development online course. I have learnt a lot from this course and this was a final project from the course. In this project I combined some of the things that I have learnt from the course to be able to create a feature full payload that bypasses AV solutions.
+This is a project that I have been working on for a couple weeks now. I have been doing malware development for probably 5 months or so now and I am still learning so much and I originally made this just to learn how to use payload staging to have the malware download the shellcode from the internet instead of having the shellcode inside of the binary to avoid static analysis. 
 
 ---
 
