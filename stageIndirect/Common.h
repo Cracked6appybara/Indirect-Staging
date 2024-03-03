@@ -28,6 +28,12 @@
 #define OpenProcess_JOAA				0xAF03507E
 
 
+/*-------------[IatCamo]-------------*/
+
+VOID IatCamouflage();
+int RandomCompileTimeSeed(void);
+
+/*-------------[HASHING]-------------*/
 
 #define INITIAL_SEED 8   
 

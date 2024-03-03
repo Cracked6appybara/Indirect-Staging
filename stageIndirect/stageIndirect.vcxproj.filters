@@ -39,6 +39,9 @@
     <ClCompile Include="StringHash.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="IATCamo.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h">

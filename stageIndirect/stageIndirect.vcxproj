@@ -139,6 +139,7 @@
   <ItemGroup>
     <ClCompile Include="CustomFuncs.c" />
     <ClCompile Include="enum.c" />
+    <ClCompile Include="IATCamo.h" />
     <ClCompile Include="main.c" />
     <ClCompile Include="prelude.c" />
     <ClCompile Include="remoteInjection.c" />
