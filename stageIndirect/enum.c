@@ -39,7 +39,7 @@ BOOL GetRemoteProcessHandle(IN LPCWSTR szProcName, IN DWORD* pdwPid, IN HANDLE* 
 	// calling NtQuerySystemInformation with the right arguments, the output will be saved to 'SystemProcInfo'
 	STATUS = NtQuerySystemInformation(SystemProcessInformation, SystemProcInfo, uReturnLen1, &uReturnLen2);
 	if (!STATUS == STATUS_SUCCESS) {
-		PRINTA("[!] NtQuerySystemInformation Failed With Error : 0x%x \n", STATUS);
+		PRINTA("[!] NtQuerySystemInformation2 Failed With Error : 0x%x \n", STATUS);
 		return FALSE;
 	}
 	

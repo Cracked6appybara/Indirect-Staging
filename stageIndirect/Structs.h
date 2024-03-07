@@ -12,6 +12,12 @@
 #define STRUCTS_H
 
 
+typedef NTSTATUS(NTAPI* fnSystemFunction032)(
+    struct USTRING* Img,
+    struct USTRING* Key
+    );
+
+
 // this is what SystemFunction032 function take as a parameter
 typedef struct
 {
