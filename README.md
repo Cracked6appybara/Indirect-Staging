@@ -5,6 +5,7 @@
 - API Hashing
 - String Hashing
 - No CRT library imports
+- Brute Force Decryption
 - ~~Self Deletion~~
 - ~~Anti-Analysis features~~
 
