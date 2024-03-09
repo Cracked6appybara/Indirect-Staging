@@ -42,6 +42,9 @@
     <ClCompile Include="IATCamo.h">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="vanish.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h">

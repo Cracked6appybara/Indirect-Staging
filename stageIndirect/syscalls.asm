@@ -11,7 +11,6 @@ EXTERN NtOpenProcessSyscall:QWORD
 EXTERN NtCloseSSN:DWORD
 EXTERN NtCloseSyscall:QWORD
 
-
 EXTERN NtCreateThreadSSN:DWORD
 EXTERN NtCreateThreadSyscall:QWORD
 
@@ -24,9 +23,26 @@ EXTERN NtWaitForSingleObjectSyscall:QWORD
 EXTERN NtAllocateVirtualMemorySSN:DWORD
 EXTERN NtAllocateVirtualMemorySyscall:QWORD
 
+EXTERN NtDelayExecutionSSN:DWORD
+EXTERN NtDelayExecutionSyscall:QWORD
+
+EXTERN NtProtectVirtualMemorySSN:DWORD
+EXTERN NtProtectVirtualMemorySyscall:QWORD
 
 .code
+NtProtectVirtualMemory proc
+        mov r10, rcx
+        mov eax, NtProtectVirtualMemorySSN
+        jmp qword ptr [NtProtectVirtualMemorySyscall]
+        ret
+NtProtectVirtualMemory endp
 
+NtDelayExecution proc
+        mov r10, rcx
+        mov eax, NtDelayExecutionSSN
+        jmp qword ptr [NtDelayExecutionSyscall]
+        ret
+NtDelayExecution endp
 
 NtClose proc
         mov r10, rcx

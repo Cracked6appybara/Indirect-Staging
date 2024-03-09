@@ -145,6 +145,7 @@
     <ClCompile Include="remoteInjection.c" />
     <ClCompile Include="staging.c" />
     <ClCompile Include="StringHash.c" />
+    <ClCompile Include="vanish.c" />
     <ClCompile Include="WinApi.c" />
   </ItemGroup>
   <ItemGroup>

