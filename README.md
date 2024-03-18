@@ -6,7 +6,7 @@
 - String Hashing
 - No CRT library imports
 - Brute Force Decryption
-- ~~Self Deletion~~
+- Self Deletion
 - ~~Anti-Analysis features~~
 
   
@@ -18,7 +18,6 @@ I would love feedback on the project and how I could improve it!
 
 ### Upcoming Features
 
-- Self Deletion
 - Execution Delay
 - Anti-Virtualisation
 
