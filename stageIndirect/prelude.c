@@ -55,7 +55,7 @@ VOID indirectMyAss(IN DWORD funcName, IN HMODULE hNTDLL, OUT DWORD* SSN, OUT UIN
     *Syscall = funcAddress + 0x12;
 
 
-    if (_memcpy(opcodes, (const void*)*Syscall, sizeof(opcodes)) == 0) {
+    if (memcmp(opcodes, (const void*)*Syscall, sizeof(opcodes)) == 0) {
 #ifdef DEBUG
         PRINTA("[memcmp] function opcodes do not match the syscall opcodes, error: %d\n", GetLastError());
 #endif

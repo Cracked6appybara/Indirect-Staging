@@ -19,12 +19,12 @@ BOOL GetRemoteProcessHandle(IN LPCWSTR szProcName, IN DWORD* pdwPid, IN HANDLE* 
 	PVOID							pValueToFree = NULL;
 	NTSTATUS						STATUS = NULL;
 
-	
+
 
 
 	// this will fail (with status = STATUS_INFO_LENGTH_MISMATCH), but that's ok, because we need to know how much to allocate (uReturnLen1)
 	STATUS = NtQuerySystemInformation(SystemProcessInformation, NULL, NULL, &uReturnLen1);
-	
+
 
 	// allocating enough buffer for the returned array of `SYSTEM_PROCESS_INFORMATION` struct
 	SystemProcInfo = (PSYSTEM_PROCESS_INFORMATION)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (SIZE_T)uReturnLen1);
